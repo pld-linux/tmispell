@@ -1,0 +1,102 @@
+--- tmispell-rel-0.5.0/configure.ac.orig	2009-02-10 17:08:13.000000000 +0100
++++ tmispell-rel-0.5.0/configure.ac	2017-04-15 23:07:29.326418125 +0200
+@@ -72,6 +72,7 @@ AC_SEARCH_LIBS(initscr, ncurses curses,
+                        Do you have Ncurses installed?])])
+ 
+ PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.0)
++PKG_CHECK_MODULES(GLIBMM, glibmm-2.4 >= 2.4.0)
+ 
+ dnl ## Config file
+ if test "x${sysconfdir}" = 'x${prefix}/etc'; then
+--- tmispell-rel-0.5.0/enchant/voikko_provider.cc.orig	2009-02-10 17:08:13.000000000 +0100
++++ tmispell-rel-0.5.0/enchant/voikko_provider.cc	2017-04-15 23:15:31.759745946 +0200
+@@ -253,13 +253,13 @@ voikko_provider_dispose (EnchantProvider
+ 	::g_free (me);
+ }
+ 
+-static char *
++static const char *
+ voikko_provider_identify (EnchantProvider * me)
+ {
+ 	return "voikko";
+ }
+ 
+-static char *
++static const char *
+ voikko_provider_describe (EnchantProvider * me)
+ {
+ 	return "Voikko Provider";
+--- tmispell-rel-0.5.0/src/Makefile.am.orig	2009-02-10 17:08:13.000000000 +0100
++++ tmispell-rel-0.5.0/src/Makefile.am	2017-04-15 23:06:57.813085150 +0200
+@@ -1,15 +1,9 @@
+-INCLUDES=$(GLIB_CFLAGS) -Iglibmm
+-
+-USTRING_SOURCES = glibmm/convert.h glibmm/error.h glibmm/exception.h glibmm/unicode.h \
+-                  glibmm/ustring.h glibmm/utility.h glibmm/convert.cc glibmm/error.cc \
+-                  glibmm/exception.cc glibmm/glibmmconfig.h glibmm/unicode.cc glibmm/ustring.cc \
+-                  glibmm/private/convert_p.h glibmm/private/unicode_p.h
+-
++INCLUDES=$(GLIB_CFLAGS) $(GLIBMM_CFLAGS)
+ 
+ MAINTAINERCLEANFILES =  Makefile.in .deps config.hh config.hh.in stamp-h.in
+ 
+ bin_PROGRAMS = tmispell
+-tmispell_LDADD = @INTLLIBS@ $(GLIB_LIBS)
++tmispell_LDADD = @INTLLIBS@ $(GLIBMM_LIBS) $(GLIB_LIBS)
+ tmispell_SOURCES =	\
+ 	charset.hh	\
+ 	charset.cc	\
+@@ -41,8 +35,7 @@ tmispell_SOURCES =	\
+ 	tmispell.hh	\
+ 	spell.cc	\
+ 	spell.hh	\
+-	voikko.hxx \
+-	$(USTRING_SOURCES)
++	voikko.hxx
+ 
+ #### Debug
+ ####
+--- tmispell-rel-0.5.0/src/options.cc.orig	2009-02-10 17:08:13.000000000 +0100
++++ tmispell-rel-0.5.0/src/options.cc	2017-04-15 23:10:35.616415996 +0200
+@@ -21,6 +21,7 @@
+  *
+  * Parse command line options and assume sensible defaults.
+  */
++#include <cstring>
+ #include <string>
+ #include <iostream>
+ #include <sstream>
+--- tmispell-rel-0.5.0/enchant/Makefile.am.orig	2009-02-10 17:08:13.000000000 +0100
++++ tmispell-rel-0.5.0/enchant/Makefile.am	2017-04-16 07:26:51.886076004 +0200
+@@ -2,19 +2,11 @@
+ 
+ target_lib = libenchant_voikko.la
+ 
+-INCLUDES=-I$(top_srcdir)/src $(ENCHANT_CFLAGS)
++INCLUDES=-I$(top_srcdir)/src $(ENCHANT_CFLAGS) $(GLIBMM_CFLAGS)
+ 
+ voikko_LTLIBRARIES = $(target_lib)
+ voikkodir = $(libdir)/enchant
+ 
+-USTRING_SOURCES = \
+-        $(top_srcdir)/src/glibmm/convert.cc \
+-        $(top_srcdir)/src/glibmm/exception.cc \
+-        $(top_srcdir)/src/glibmm/error.cc \
+-        $(top_srcdir)/src/glibmm/unicode.cc \
+-        $(top_srcdir)/src/glibmm/ustring.cc \
+-        $(top_srcdir)/src/glibmm/utility.cc
+-
+ TMISPELL_SOURCES = \
+ 	$(top_srcdir)/src/charset.cc \
+ 	$(top_srcdir)/src/charset.hh \
+@@ -31,8 +23,8 @@
+ 	$(top_srcdir)/src/tmerror.cc \
+ 	$(top_srcdir)/src/tmerror.hh
+ 
+-libenchant_voikko_la_LIBADD= $(ENCHANT_LIBS) $(ENCHANT_LIBS)
++libenchant_voikko_la_LIBADD= $(ENCHANT_LIBS) $(GLIBMM_LIBS)
+ libenchant_voikko_la_LDFLAGS = -version-info $(VERSION_INFO) -no-undefined
+ libenchant_voikko_la_SOURCES = \
+-	voikko_provider.cc $(TMISPELL_SOURCES) $(USTRING_SOURCES)
++	voikko_provider.cc $(TMISPELL_SOURCES)
+ libenchant_voikko_lalibdir=$(libdir)/enchant
