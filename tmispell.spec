@@ -40,7 +40,7 @@ Ispella, jeśli nie ma modułu dla wybranego języka.
 
 %prep
 %setup -q -n tmispell-rel-%{version}
-%patch0 -p1
+%patch -P0 -p1
 
 # force system glibmm
 %{__rm} -r src/glibmm
